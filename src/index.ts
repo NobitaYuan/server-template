@@ -9,15 +9,20 @@ const config = getConfig()
 const logger = getLogger()
 
 initDb()
-logger.info('Database initialized')
+logger.info('数据库初始化完成')
 
 const ip = getLocalIps()[0] ?? 'localhost'
 
-serve({ fetch: app.fetch, port: config.PORT }, (info) => {
+const server = serve({ fetch: app.fetch, port: config.PORT }, (info) => {
   logger.info('===================================================')
-  logger.info('Server running at:')
-  logger.info(`  Local:   http://localhost:${info.port}`)
-  logger.info(`  Network: http://${ip}:${info.port}`)
-  logger.info(`  API docs: http://${ip}:${info.port}/api/v1/doc`)
+  logger.info('服务已启动：')
+  logger.info(`    本地：http://localhost:${info.port}`)
+  logger.info(`    内网：http://${ip}:${info.port}`)
+  logger.info(`    文档：http://${ip}:${info.port}/api/v1/doc`)
   logger.info('===================================================')
+})
+
+process.on('SIGINT', () => {
+  server.close()
+  process.exit(0)
 })
