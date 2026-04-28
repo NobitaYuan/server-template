@@ -14,8 +14,10 @@ logger.info('Database initialized')
 const ip = getLocalIps()[0] ?? 'localhost'
 
 serve({ fetch: app.fetch, port: config.PORT }, (info) => {
-  logger.info(`Server running at:`)
+  logger.info('===================================================')
+  logger.info('Server running at:')
   logger.info(`  Local:   http://localhost:${info.port}`)
   logger.info(`  Network: http://${ip}:${info.port}`)
-  logger.info(`API docs at http://${ip}:${info.port}/api/v1/doc`)
+  logger.info(`  API docs: http://${ip}:${info.port}/api/v1/doc`)
+  logger.info('===================================================')
 })

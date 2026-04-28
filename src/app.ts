@@ -23,12 +23,16 @@ app.openAPIRegistry.registerComponent('securitySchemes', 'BearerAuth', {
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok' }))
 
+// ==================== Routes ====================
+
 // Mount modules under /api/v1
 const api = new OpenAPIHono()
 api.route('/auth', authApp)
 api.route('/users', userApp)
 
 app.route('/api/v1', api)
+
+// ==================== OpenAPI ====================
 
 // OpenAPI spec (with global security)
 app.doc('/api/v1/openapi.json', {

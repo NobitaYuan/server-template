@@ -27,7 +27,7 @@ describe('Auth', () => {
         body: JSON.stringify(testUser),
       })
 
-      expect(res.status).toBe(201)
+      expect(res.status).toBe(200)
       const json = await res.json()
       expect(json.data.user.username).toBe(testUser.username)
       expect(json.data.accessToken).toBeDefined()
@@ -46,7 +46,9 @@ describe('Auth', () => {
         body: JSON.stringify(testUser),
       })
 
-      expect(res.status).toBe(409)
+      expect(res.status).toBe(200)
+      const json = await res.json()
+      expect(json.code).toBe(409)
     })
 
     it('should reject mismatched passwords', async () => {
@@ -56,7 +58,9 @@ describe('Auth', () => {
         body: JSON.stringify({ ...testUser, confirmPassword: 'wrong' }),
       })
 
-      expect(res.status).toBe(400)
+      expect(res.status).toBe(200)
+      const json = await res.json()
+      expect(json.code).toBe(400)
     })
   })
 
@@ -98,7 +102,9 @@ describe('Auth', () => {
         }),
       })
 
-      expect(res.status).toBe(401)
+      expect(res.status).toBe(200)
+      const json = await res.json()
+      expect(json.code).toBe(401)
     })
   })
 })

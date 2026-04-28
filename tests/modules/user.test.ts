@@ -33,7 +33,9 @@ describe('Users', () => {
   describe('GET /api/v1/users', () => {
     it('should require authentication', async () => {
       const res = await app.request('/api/v1/users')
-      expect(res.status).toBe(401)
+      expect(res.status).toBe(200)
+      const json = await res.json()
+      expect(json.code).toBe(401)
     })
 
     it('should return user list', async () => {
@@ -70,7 +72,9 @@ describe('Users', () => {
         headers: { Authorization: `Bearer ${token}` },
       })
 
-      expect(res.status).toBe(404)
+      expect(res.status).toBe(200)
+      const json = await res.json()
+      expect(json.code).toBe(404)
     })
   })
 
@@ -107,7 +111,9 @@ describe('Users', () => {
       const getRes = await app.request(`/api/v1/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      expect(getRes.status).toBe(404)
+      expect(getRes.status).toBe(200)
+      const getJson = await getRes.json()
+      expect(getJson.code).toBe(404)
     })
   })
 })

@@ -1,10 +1,9 @@
 import { createRoute } from '@hono/zod-openapi'
-import { OpenAPIHono } from '@hono/zod-openapi'
 import { RegisterSchema, LoginSchema, AuthResponseSchema } from './auth.schema.js'
-import { apiSchema } from '../../lib/response.js'
+import { apiSchema, success, createRouteApp } from '../../lib/response.js'
 import * as authService from './auth.service.js'
 
-const authApp = new OpenAPIHono()
+const authApp = createRouteApp()
 
 const registerRoute = createRoute({
   method: 'post',
@@ -17,7 +16,7 @@ const registerRoute = createRoute({
     },
   },
   responses: {
-    201: {
+    200: {
       content: {
         'application/json': { schema: apiSchema(AuthResponseSchema) },
       },
@@ -49,13 +48,13 @@ const loginRoute = createRoute({
 authApp.openapi(registerRoute, async (c) => {
   const data = c.req.valid('json')
   const result = await authService.register(data)
-  return c.json({ code: 201, message: 'ok', data: result }, 201)
+  return success(c, result)
 })
 
 authApp.openapi(loginRoute, async (c) => {
   const data = c.req.valid('json')
   const result = await authService.login(data)
-  return c.json({ code: 200, message: 'ok', data: result }, 200)
+  return success(c, result)
 })
 
 export { authApp }
