@@ -30,10 +30,11 @@ api.route('/users', userApp)
 
 app.route('/api/v1', api)
 
-// OpenAPI spec
+// OpenAPI spec (with global security)
 app.doc('/api/v1/openapi.json', {
   openapi: '3.1.0',
   info: { title: 'Server Template API', version: '1.0.0' },
+  security: [{ BearerAuth: [] }],
 })
 
 // Scalar API documentation UI
