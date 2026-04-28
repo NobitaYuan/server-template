@@ -6,11 +6,8 @@ import { users } from '../../core/db/schema/user.js'
 import { getConfig } from '../../core/config/index.js'
 import { ConflictError, UnauthorizedError } from '../../core/errors/index.js'
 import { getLogger } from '../../lib/logger.js'
+import { generateId } from '../../lib/utils.js'
 import type { RegisterInput, LoginInput } from './auth.schema.js'
-
-function generateId(): string {
-  return crypto.randomUUID()
-}
 
 async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10)
@@ -57,7 +54,7 @@ export async function register(data: RegisterInput) {
     })
     .run()
 
-  logger.info({ userId: id }, 'User registered')
+  logger.info({ userId: id }, '用户注册成功')
 
   const config = getConfig()
   const accessToken = await signToken({ userId: id }, config.JWT_EXPIRES_IN)

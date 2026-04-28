@@ -90,6 +90,8 @@ src/
    ```ts
    import { postApp } from './modules/post/index.js'
    api.route('/posts', postApp)
+   // 如果需要认证，加一行：
+   app.use('/api/v1/posts/*', authMiddleware)
    ```
 5. 在 `tests/modules/` 下添加测试
 

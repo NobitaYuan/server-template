@@ -60,7 +60,7 @@ describe('Auth', () => {
 
       expect(res.status).toBe(200)
       const json = await res.json()
-      expect(json.code).toBe(400)
+      expect(json.code).toBe(422)
     })
   })
 

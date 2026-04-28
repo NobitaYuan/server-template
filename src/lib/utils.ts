@@ -10,3 +10,7 @@ export function getLocalIps(): string[] {
   }
   return ips
 }
+
+export function generateId(): string {
+  return crypto.randomUUID()
+}
