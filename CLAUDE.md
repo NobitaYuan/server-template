@@ -156,19 +156,54 @@ export async function getItem(id: string) {
 - **日志** — 使用 `getLogger()`（Pino），不要用 `console.log`
 - **测试** — Vitest，每个测试文件独立数据库，`afterEach` 清空数据
 
+## 前后端协作（openapi-typescript + openapi-fetch）
+
+前端通过 OpenAPI spec 自动生成 TypeScript 类型，实现 API 类型安全。
+
+### 协作流程
+
+```
+后端改 API → pnpm export-spec → openapi.json → 前端 pnpm generate:api → 类型自动更新
+```
+
+### 后端操作
+
+1. 修改/新增 API 后，运行 `pnpm export-spec` 导出最新的 `openapi.json`
+2. 提交 `openapi.json` 到仓库，前端从中生成类型
+
+### 前端操作
+
+1. 安装依赖：`pnpm add openapi-fetch && pnpm add -D openapi-typescript`
+2. 生成类型：`pnpm generate:api`（从 `../server-template/openapi.json` 生成 `src/api/generated/api.d.ts`）
+3. 创建 client（`src/api/generated/client.ts`）—— `createClient<paths>()` + 中间件（token 注入、401 处理、错误提示）
+4. 编写 API 模块（`src/api/server/xxx.ts`）—— 调用 `client.GET`/`client.POST`，路径和参数类型自动推导
+
+### 关键注意事项
+
+- **不要设 baseUrl**：OpenAPI spec 中的路径已包含 `/api/v1` 前缀，`createClient()` 不需要 `baseUrl`
+- **路径写错会报红**：`client.GET('/api/v1/users/{id}')` 中的路径必须与 spec 完全一致，否则 TypeScript 报错
+- **原有 Axios 保留**：openapi-fetch 与原有 Axios wrapper 并存，互不影响
+- **响应格式统一**：后端返回 `{ code, message, data }`，前端中间件统一处理业务错误
+
+### 相关文件
+
+- `src/scripts/export-openapi.ts` — 导出 OpenAPI spec 的脚本
+- `openapi.json` — 导出的 spec 文件（唯一的事实来源）
+
 ## 可用脚本
 
-| 命令               | 说明                     |
-| ------------------ | ------------------------ |
-| `pnpm dev`         | 启动开发服务器（热重载） |
-| `pnpm build`       | TypeScript 编译          |
-| `pnpm start`       | 运行编译后的代码         |
-| `pnpm test`        | 运行测试                 |
-| `pnpm test:watch`  | 监听模式测试             |
-| `pnpm db:generate` | 生成数据库迁移文件       |
-| `pnpm db:migrate`  | 执行迁移                 |
-| `pnpm db:studio`   | 打开 Drizzle Studio      |
-| `pnpm format`      | 全局格式化（oxfmt）      |
+| 命令               | 说明                              |
+| ------------------ | --------------------------------- |
+| `pnpm dev`         | 启动开发服务器（热重载）          |
+| `pnpm build`       | TypeScript 编译                   |
+| `pnpm start`       | 运行编译后的代码                  |
+| `pnpm test`        | 运行测试                          |
+| `pnpm test:watch`  | 监听模式测试                      |
+| `pnpm db:generate` | 生成数据库迁移文件                |
+| `pnpm db:migrate`  | 执行迁移                          |
+| `pnpm db:studio`   | 打开 Drizzle Studio               |
+| `pnpm format`      | 全局格式化（oxfmt）               |
+| `pnpm export-spec` | 导出 OpenAPI spec 到 openapi.json |
 
 ## API 路由
 
