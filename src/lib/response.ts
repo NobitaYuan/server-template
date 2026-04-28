@@ -22,7 +22,7 @@ export const errorSchema = z.object({
   data: z.literal(null),
 })
 
-export function success<T>(c: Context, data: T, message = 'success') {
+export function success<T>(c: Context, data: T, message = '操作成功') {
   return c.json({ code: 200, message, data } satisfies ApiResponse<T>, 200)
 }
 
@@ -34,7 +34,7 @@ export function createRouteApp() {
   return new OpenAPIHono({
     defaultHook: (result, c) => {
       if (!result.success) {
-        return c.json({ code: 400, message: 'Validation error', data: null }, 200)
+        return c.json({ code: 400, message: '参数验证失败', data: null }, 200)
       }
     },
   })

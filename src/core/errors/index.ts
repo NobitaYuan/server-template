@@ -9,35 +9,35 @@ export class AppError extends Error {
 }
 
 export class BadRequestError extends AppError {
-  constructor(message = 'Bad request') {
+  constructor(message = '请求错误') {
     super(message, 400)
     this.name = 'BadRequestError'
   }
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message = 'Unauthorized') {
+  constructor(message = '未授权') {
     super(message, 401)
     this.name = 'UnauthorizedError'
   }
 }
 
 export class ForbiddenError extends AppError {
-  constructor(message = 'Forbidden') {
+  constructor(message = '禁止访问') {
     super(message, 403)
     this.name = 'ForbiddenError'
   }
 }
 
 export class NotFoundError extends AppError {
-  constructor(message = 'Not found') {
+  constructor(message = '资源不存在') {
     super(message, 404)
     this.name = 'NotFoundError'
   }
 }
 
 export class ConflictError extends AppError {
-  constructor(message = 'Conflict') {
+  constructor(message = '资源冲突') {
     super(message, 409)
     this.name = 'ConflictError'
   }

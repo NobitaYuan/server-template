@@ -33,7 +33,7 @@ async function verifyToken(token: string) {
     const { payload } = await jose.jwtVerify(token, secret)
     return payload as { userId: string }
   } catch {
-    throw new UnauthorizedError('Invalid or expired token')
+    throw new UnauthorizedError('无效或过期的令牌')
   }
 }
 
@@ -43,7 +43,7 @@ export async function register(data: RegisterInput) {
 
   const existing = db.select().from(users).where(eq(users.username, data.username)).get()
   if (existing) {
-    throw new ConflictError('Username already taken')
+    throw new ConflictError('用户名已被占用')
   }
 
   const passwordHash = await hashPassword(data.password)
@@ -73,12 +73,12 @@ export async function login(data: LoginInput) {
 
   const user = db.select().from(users).where(eq(users.username, data.username)).get()
   if (!user) {
-    throw new UnauthorizedError('Invalid username or password')
+    throw new UnauthorizedError('用户名或密码错误')
   }
 
   const valid = await verifyPassword(data.password, user.passwordHash)
   if (!valid) {
-    throw new UnauthorizedError('Invalid username or password')
+    throw new UnauthorizedError('用户名或密码错误')
   }
 
   const config = getConfig()

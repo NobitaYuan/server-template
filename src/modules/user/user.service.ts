@@ -16,7 +16,7 @@ function formatUser(user: typeof users.$inferSelect) {
 export async function getUser(id: string) {
   const db = getDb()
   const user = db.select().from(users).where(eq(users.id, id)).get()
-  if (!user) throw new NotFoundError('User not found')
+  if (!user) throw new NotFoundError('用户不存在')
   return formatUser(user)
 }
 
@@ -36,12 +36,12 @@ export async function updateUser(id: string, data: UpdateUserInput) {
   const logger = getLogger()
 
   const user = db.select().from(users).where(eq(users.id, id)).get()
-  if (!user) throw new NotFoundError('User not found')
+  if (!user) throw new NotFoundError('用户不存在')
 
   if (data.username) {
     const existing = db.select().from(users).where(eq(users.username, data.username)).get()
     if (existing && existing.id !== id) {
-      throw new ConflictError('Username already taken')
+      throw new ConflictError('用户名已被占用')
     }
   }
 
@@ -59,7 +59,7 @@ export async function deleteUser(id: string) {
   const logger = getLogger()
 
   const user = db.select().from(users).where(eq(users.id, id)).get()
-  if (!user) throw new NotFoundError('User not found')
+  if (!user) throw new NotFoundError('用户不存在')
 
   db.delete(users).where(eq(users.id, id)).run()
   logger.info({ userId: id }, 'User deleted')

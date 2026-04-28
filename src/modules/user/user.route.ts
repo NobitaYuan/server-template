@@ -16,7 +16,7 @@ const listRoute = createRoute({
   responses: {
     200: {
       content: { 'application/json': { schema: apiSchema(UserListResponseSchema) } },
-      description: 'User list',
+      description: '用户列表',
     },
   },
 })
@@ -30,7 +30,7 @@ const getRoute = createRoute({
   responses: {
     200: {
       content: { 'application/json': { schema: apiSchema(UserSchema) } },
-      description: 'User detail',
+      description: '用户详情',
     },
   },
 })
@@ -47,7 +47,7 @@ const updateRoute = createRoute({
   responses: {
     200: {
       content: { 'application/json': { schema: apiSchema(UserSchema) } },
-      description: 'User updated',
+      description: '用户已更新',
     },
   },
 })
@@ -63,7 +63,7 @@ const deleteRoute = createRoute({
       content: {
         'application/json': { schema: apiSchema(z.literal(null)) },
       },
-      description: 'User deleted',
+      description: '用户已删除',
     },
   },
 })

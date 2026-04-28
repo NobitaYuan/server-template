@@ -7,7 +7,7 @@ export const RegisterSchema = z
     confirmPassword: z.string(),
   })
   .refine((d) => d.password === d.confirmPassword, {
-    message: 'Passwords do not match',
+    message: '两次密码不一致',
     path: ['confirmPassword'],
   })
 

@@ -20,7 +20,7 @@ const registerRoute = createRoute({
       content: {
         'application/json': { schema: apiSchema(AuthResponseSchema) },
       },
-      description: 'User registered successfully',
+      description: '用户注册成功',
     },
   },
 })
@@ -40,7 +40,7 @@ const loginRoute = createRoute({
       content: {
         'application/json': { schema: apiSchema(AuthResponseSchema) },
       },
-      description: 'Login successful',
+      description: '登录成功',
     },
   },
 })

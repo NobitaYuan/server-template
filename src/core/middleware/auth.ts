@@ -5,7 +5,7 @@ import { UnauthorizedError } from '../errors/index.js'
 export async function authMiddleware(c: Context, next: Next) {
   const header = c.req.header('Authorization')
   if (!header?.startsWith('Bearer ')) {
-    throw new UnauthorizedError('Missing or invalid Authorization header')
+    throw new UnauthorizedError('缺少或无效的 Authorization 请求头')
   }
 
   const token = header.slice(7)

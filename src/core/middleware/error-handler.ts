@@ -11,5 +11,5 @@ export const errorHandler: ErrorHandler = async (err, c) => {
   }
 
   logger.error({ err }, 'Unhandled error')
-  return c.json({ code: 500, message: 'Internal server error', data: null }, 200)
+  return c.json({ code: 500, message: '服务器内部错误', data: null }, 200)
 }
