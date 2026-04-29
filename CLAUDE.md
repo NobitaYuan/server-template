@@ -12,7 +12,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Hono** + **@hono/zod-openapi** — Web 框架 + 类型安全的路由 + 自动 OpenAPI 文档
 - **TypeScript** — strict 模式
 - **Drizzle ORM** + **better-sqlite3** — 数据库（SQLite，可扩展 PostgreSQL）
-- **Zod** — 参数校验 + Schema 定义
+- **drizzle-zod** — 从 Drizzle 表自动生成 Zod schema（单一数据源）
+- **Zod** — 参数校验 + Schema 定义 + 类型推导
 - **JWT (jose)** — 单 Token 认证（HS256，默认 7 天过期）
 - **Pino** — 日志
 - **Vitest** — 测试
@@ -28,7 +29,8 @@ src/
 ├── core/                   # 核心基础设施（不依赖业务模块）
 │   ├── config/index.ts     # Zod 校验环境变量，单例
 │   ├── db/index.ts         # 数据库连接（better-sqlite3 + Drizzle）
-│   ├── db/schema/          # Drizzle 表定义
+│   ├── db/schema/          # Drizzle 表定义 + 自动生成的响应 schema（types.ts）
+│   ├── db/schema/types.ts  # 从 Drizzle 表自动推导的 Zod 响应 schema
 │   ├── errors/index.ts     # 自定义错误类（AppError 体系）
 │   └── middleware/          # 全局中间件（auth、error-handler、request-logger）
 ├── lib/                    # 通用工具
@@ -87,62 +89,9 @@ tests/
 
 ## 如何添加新模块
 
-1. 在 `src/modules/` 下创建目录，如 `post/`
-2. 创建四个文件：
-   - `post.schema.ts` — Zod schema（请求参数 + 响应结构）
-   - `post.service.ts` — 业务逻辑，使用 `getDb()` 操作数据库，异常时 `throw` 自定义错误
-   - `post.route.ts` — 用 `createRouteApp()` 创建实例，用 `createRoute()` 定义路由，handler 中调用 `success()` 返回
-   - `index.ts` — 导出路由
-3. 在 `src/core/db/schema/` 中添加 Drizzle 表定义，并在 `index.ts` 中导出
-4. 在 `src/app.ts` 中挂载路由：
-   ```typescript
-   import { postApp } from './modules/post/index.js'
-   api.route('/posts', postApp)
-   // 如果需要认证，加一行：
-   // app.use('/api/v1/posts/*', authMiddleware)
-   ```
-5. 在 `tests/modules/` 下添加测试
+使用 `/add-module <模块名>` 获取完整 6 步指南和代码模板。
 
-### 路由文件模板
-
-```typescript
-import { createRoute } from '@hono/zod-openapi'
-import { apiSchema, success, createRouteApp } from '../../lib/response.js'
-
-const postApp = createRouteApp()
-
-const listRoute = createRoute({
-  method: 'get',
-  path: '/',
-  responses: {
-    200: {
-      content: { 'application/json': { schema: apiSchema(SomeResponseSchema) } },
-      description: '列表',
-    },
-  },
-})
-
-postApp.openapi(listRoute, async (c) => {
-  const result = await postService.list()
-  return success(c, result)
-})
-
-export { postApp }
-```
-
-### Service 文件模板
-
-```typescript
-import { getDb } from '../../core/db/index.js'
-import { NotFoundError } from '../../core/errors/index.js'
-
-export async function getItem(id: string) {
-  const db = getDb()
-  const item = db.select().from(items).where(eq(items.id, id)).get()
-  if (!item) throw new NotFoundError('未找到')
-  return item
-}
-```
+流程概要：Drizzle 建表 → `types.ts` 用 `createSelectSchema()` 生成响应 schema → 模块四文件（schema / service / route / index）→ `app.ts` 注册命名 schema + 挂路由 → `pnpm export-spec && pnpm generate:types` 导出类型 → 写测试
 
 ## 关键约定
 
@@ -152,7 +101,9 @@ export async function getItem(id: string) {
 - **密码** — 使用 bcryptjs（`hashPassword` / `verifyPassword`）
 - **Token** — 单 JWT Token，`signToken` / `verifyToken` 在 `auth.service.ts` 中
 - **认证中间件** — `src/core/middleware/auth.ts`，在 `app.ts` 中用 `app.use('/api/v1/xxx/*', authMiddleware)` 统一管理，新增需要认证的模块在 `app.ts` 加一行即可
-- **环境变量** — 在 `src/core/config/index.ts` 用 Zod 定义，新变量必须在此注册
+- **响应 Schema** — 使用 `drizzle-zod` 的 `createSelectSchema()` 从 Drizzle 表自动生成，在 `src/core/db/schema/types.ts` 中统一管理，模块 schema 文件从 types.ts 导入
+- **`.describe()` 注释** — 所有 schema 和关键字段都应加 `.describe('中文描述')`，注释会传递到 OpenAPI spec 和前端类型文件。链路：`Zod .describe()` → OpenAPI `description` → `api-types.d.ts` 的 `/** @description */` 注释
+- **前端类型** — 运行 `pnpm export-spec && pnpm generate:types` 生成 `api-types.d.ts`，前端通过 `components['schemas']` 使用
 - **日志** — 使用 `getLogger()`（Pino），不要用 `console.log`
 - **测试** — Vitest，每个测试文件独立数据库，`afterEach` 清空数据
 
@@ -160,35 +111,46 @@ export async function getItem(id: string) {
 
 前端通过 OpenAPI spec 自动生成 TypeScript 类型，实现 API 类型安全。
 
-### 协作流程
+### 类型共享流程
 
 ```
-后端改 API → pnpm export-spec → openapi.json → 前端 pnpm generate:api → 类型自动更新
+Drizzle 表定义
+    ↓ drizzle-zod (createSelectSchema)
+Zod schema（.describe() 加注释）
+    ↓ @hono/zod-openapi
+OpenAPI spec（命名组件 + description）
+    ↓ pnpm export-spec
+openapi.json
+    ↓ pnpm generate:types (openapi-typescript)
+api-types.d.ts（带 /** @description */ 注释的类型）
 ```
 
 ### 后端操作
 
-1. 修改/新增 API 后，运行 `pnpm export-spec` 导出最新的 `openapi.json`
-2. 提交 `openapi.json` 到仓库，前端从中生成类型
+1. 修改/新增 Drizzle 表后，在 `src/core/db/schema/types.ts` 中更新响应 schema
+2. 新增模块时在 `src/app.ts` 中用 `app.openAPIRegistry.register('TypeName', Schema)` 注册命名组件
+3. 运行 `pnpm export-spec` 导出 OpenAPI spec
+4. 运行 `pnpm generate:types` 生成前端类型文件
 
-### 前端操作
+### 前端使用
 
-1. 安装依赖：`pnpm add openapi-fetch && pnpm add -D openapi-typescript`
-2. 生成类型：`pnpm generate:api`（从 `../server-template/openapi.json` 生成 `src/api/generated/api.d.ts`）
-3. 创建 client（`src/api/generated/client.ts`）—— `createClient<paths>()` + 中间件（token 注入、401 处理、错误提示）
-4. 编写 API 模块（`src/api/server/xxx.ts`）—— 调用 `client.GET`/`client.POST`，路径和参数类型自动推导
+**简单类型引用** — 直接导入 `api-types.d.ts`：
 
-### 关键注意事项
+```typescript
+import type { components } from '../server-template/api-types'
 
-- **不要设 baseUrl**：OpenAPI spec 中的路径已包含 `/api/v1` 前缀，`createClient()` 不需要 `baseUrl`
-- **路径写错会报红**：`client.GET('/api/v1/users/{id}')` 中的路径必须与 spec 完全一致，否则 TypeScript 报错
-- **原有 Axios 保留**：openapi-fetch 与原有 Axios wrapper 并存，互不影响
-- **响应格式统一**：后端返回 `{ code, message, data }`，前端中间件统一处理业务错误
+type User = components['schemas']['User']
+type UserListResponse = components['schemas']['UserListResponse']
+type AuthResponse = components['schemas']['AuthResponse']
 
-### 相关文件
+function UserCard({ user }: { user: User }) { ... }
+```
 
-- `src/scripts/export-openapi.ts` — 导出 OpenAPI spec 的脚本
-- `openapi.json` — 导出的 spec 文件（唯一的事实来源）
+**类型安全请求**（可选） — 安装 `openapi-fetch`：
+
+- 不要设 `baseUrl`：OpenAPI spec 中的路径已包含 `/api/v1` 前缀
+- 路径写错会报红：`client.GET('/api/v1/users/{id}')` 中的路径必须与 spec 完全一致
+- 响应格式统一：后端返回 `{ code, message, data }`，前端中间件统一处理业务错误
 
 ## 可用脚本
 
@@ -204,6 +166,7 @@ export async function getItem(id: string) {
 | `pnpm db:studio`   | 打开 Drizzle Studio               |
 | `pnpm format`      | 全局格式化（oxfmt）               |
 | `pnpm export-spec` | 导出 OpenAPI spec 到 openapi.json |
+| `pnpm generate:types` | 从 OpenAPI spec 生成前端 TypeScript 类型（api-types.d.ts） |
 
 ## API 路由
 

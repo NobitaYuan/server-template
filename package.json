@@ -15,7 +15,8 @@
     "format": "oxfmt",
     "prepare": "husky",
     "kill": "npx kill-port 3000",
-    "export-spec": "tsx src/scripts/export-openapi.ts"
+    "export-spec": "tsx src/scripts/export-openapi.ts",
+    "generate:types": "openapi-typescript openapi.json -o api-types.d.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.0",
@@ -25,6 +26,7 @@
     "better-sqlite3": "^12.9.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
+    "drizzle-zod": "^0.8.3",
     "hono": "^4.12.15",
     "jose": "^6.2.3",
     "pino": "^10.3.1",
@@ -38,6 +40,7 @@
     "drizzle-kit": "^0.31.10",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
+    "openapi-typescript": "^7.13.0",
     "oxfmt": "^0.47.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",

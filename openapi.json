@@ -17,7 +17,120 @@
         "bearerFormat": "JWT"
       }
     },
-    "schemas": {},
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "注册时间（ISO 8601）"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "createdAt"
+        ],
+        "description": "用户信息"
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "username"
+            ],
+            "description": "用户信息"
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "JWT 访问令牌"
+          }
+        },
+        "required": [
+          "user",
+          "accessToken"
+        ],
+        "description": "认证响应"
+      },
+      "UserListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "description": "注册时间（ISO 8601）"
+                }
+              },
+              "required": [
+                "id",
+                "username",
+                "createdAt"
+              ],
+              "description": "用户信息"
+            },
+            "description": "用户列表"
+          },
+          "total": {
+            "type": "number",
+            "description": "总数"
+          },
+          "page": {
+            "type": "number",
+            "description": "当前页码"
+          },
+          "size": {
+            "type": "number",
+            "description": "每页数量"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "description": "用户列表响应"
+      },
+      "UpdateUserInput": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 50,
+            "description": "新用户名"
+          }
+        },
+        "description": "更新用户输入"
+      }
+    },
     "parameters": {}
   },
   "paths": {
@@ -32,18 +145,25 @@
                   "username": {
                     "type": "string",
                     "minLength": 2,
-                    "maxLength": 50
+                    "maxLength": 50,
+                    "description": "用户名（2-50 字符）"
                   },
                   "password": {
                     "type": "string",
                     "minLength": 6,
-                    "maxLength": 100
+                    "maxLength": 100,
+                    "description": "密码（6-100 字符）"
                   },
                   "confirmPassword": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "确认密码"
                   }
                 },
-                "required": ["username", "password", "confirmPassword"]
+                "required": [
+                  "username",
+                  "password",
+                  "confirmPassword"
+                ]
               }
             }
           }
@@ -75,16 +195,29 @@
                               "type": "string"
                             }
                           },
-                          "required": ["id", "username"]
+                          "required": [
+                            "id",
+                            "username"
+                          ],
+                          "description": "用户信息"
                         },
                         "accessToken": {
-                          "type": "string"
+                          "type": "string",
+                          "description": "JWT 访问令牌"
                         }
                       },
-                      "required": ["user", "accessToken"]
+                      "required": [
+                        "user",
+                        "accessToken"
+                      ],
+                      "description": "认证响应"
                     }
                   },
-                  "required": ["code", "message", "data"]
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
                 }
               }
             }
@@ -101,13 +234,18 @@
                 "type": "object",
                 "properties": {
                   "username": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "用户名"
                   },
                   "password": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "密码"
                   }
                 },
-                "required": ["username", "password"]
+                "required": [
+                  "username",
+                  "password"
+                ]
               }
             }
           }
@@ -139,16 +277,29 @@
                               "type": "string"
                             }
                           },
-                          "required": ["id", "username"]
+                          "required": [
+                            "id",
+                            "username"
+                          ],
+                          "description": "用户信息"
                         },
                         "accessToken": {
-                          "type": "string"
+                          "type": "string",
+                          "description": "JWT 访问令牌"
                         }
                       },
-                      "required": ["user", "accessToken"]
+                      "required": [
+                        "user",
+                        "accessToken"
+                      ],
+                      "description": "认证响应"
                     }
                   },
-                  "required": ["code", "message", "data"]
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
                 }
               }
             }
@@ -163,9 +314,11 @@
             "schema": {
               "type": "integer",
               "minimum": 1,
-              "default": 1
+              "default": 1,
+              "description": "页码"
             },
             "required": false,
+            "description": "页码",
             "name": "page",
             "in": "query"
           },
@@ -174,9 +327,11 @@
               "type": "integer",
               "minimum": 1,
               "maximum": 100,
-              "default": 20
+              "default": 20,
+              "description": "每页数量"
             },
             "required": false,
+            "description": "每页数量",
             "name": "size",
             "in": "query"
           }
@@ -210,26 +365,46 @@
                                 "type": "string"
                               },
                               "createdAt": {
-                                "type": "string"
+                                "type": "string",
+                                "description": "注册时间（ISO 8601）"
                               }
                             },
-                            "required": ["id", "username", "createdAt"]
-                          }
+                            "required": [
+                              "id",
+                              "username",
+                              "createdAt"
+                            ],
+                            "description": "用户信息"
+                          },
+                          "description": "用户列表"
                         },
                         "total": {
-                          "type": "number"
+                          "type": "number",
+                          "description": "总数"
                         },
                         "page": {
-                          "type": "number"
+                          "type": "number",
+                          "description": "当前页码"
                         },
                         "size": {
-                          "type": "number"
+                          "type": "number",
+                          "description": "每页数量"
                         }
                       },
-                      "required": ["items", "total", "page", "size"]
+                      "required": [
+                        "items",
+                        "total",
+                        "page",
+                        "size"
+                      ],
+                      "description": "用户列表响应"
                     }
                   },
-                  "required": ["code", "message", "data"]
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
                 }
               }
             }
@@ -273,13 +448,23 @@
                           "type": "string"
                         },
                         "createdAt": {
-                          "type": "string"
+                          "type": "string",
+                          "description": "注册时间（ISO 8601）"
                         }
                       },
-                      "required": ["id", "username", "createdAt"]
+                      "required": [
+                        "id",
+                        "username",
+                        "createdAt"
+                      ],
+                      "description": "用户信息"
                     }
                   },
-                  "required": ["code", "message", "data"]
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
                 }
               }
             }
@@ -306,9 +491,11 @@
                   "username": {
                     "type": "string",
                     "minLength": 2,
-                    "maxLength": 50
+                    "maxLength": 50,
+                    "description": "新用户名"
                   }
-                }
+                },
+                "description": "更新用户输入"
               }
             }
           }
@@ -337,13 +524,23 @@
                           "type": "string"
                         },
                         "createdAt": {
-                          "type": "string"
+                          "type": "string",
+                          "description": "注册时间（ISO 8601）"
                         }
                       },
-                      "required": ["id", "username", "createdAt"]
+                      "required": [
+                        "id",
+                        "username",
+                        "createdAt"
+                      ],
+                      "description": "用户信息"
                     }
                   },
-                  "required": ["code", "message", "data"]
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
                 }
               }
             }
@@ -376,11 +573,20 @@
                       "type": "string"
                     },
                     "data": {
-                      "type": ["object", "null"],
-                      "enum": [null]
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "enum": [
+                        null
+                      ]
                     }
                   },
-                  "required": ["code", "message", "data"]
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
                 }
               }
             }
